@@ -62,6 +62,12 @@ clean_data <- read_csv(here("data", "stokes15_ivdata.csv")) %>%
 
 clean_data %>%
     select(proposed_turbine_3km, log_home_val_07, p_uni_degree, log_median_inc, log_pop_denc) %>%
+    tbl_summary(
+        by = proposed_turbine_3km, 
+        statistic = list(all_continuous() ~ "{mean} ({sd})")) |> 
+            modify_header(label ~ "**Variable**") |> 
+            modify_spanning_header(c("stat_1", "stat_2") ~ "**Treatment**")
+    
 
 
 ```
@@ -103,7 +109,15 @@ Mahalanobis distance matching was first used to pair each treated unit with a co
 ```{r}
 set.seed(02252025)
 
-match_model <- 
+match_model <- matchit(
+    proposed_turbine_3km ~ 
+        log_home_val_07 + p_uni_degree + log_median_inc + log_pop_denc, # covariantes 
+    data = clean_data, 
+    method = "nearest", 
+    distance = "mahalanobis",
+    ratio = 1, 
+    replace = FALSE
+)
 
 # Extract matched data
 matched_data <- match.data(match_model)
